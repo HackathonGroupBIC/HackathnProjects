@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Approval Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 40px;
+        }
+
+        .container {
+            width: 400px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #43a047;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 12px;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Welcome Screen -->
+    <div id="welcome">
+        <h1>Loan Approval Prediction</h1>
+        <p>
+            Welcome to the Loan Prediction project!  
+            This application predicts whether a loan will be approved based on various parameters.
+        </p>
+        <p>To get started, please click the "Start" button below.</p>
+        <button onclick="startApp()">Start</button>
+    </div>
+
+    <!-- Form Screen -->
+    <div id="formSection" class="container hidden">
+        <h2>Loan Application Form</h2>
+        <div class ="form-group">
+            <label>Applicant Name</label>
+            <input type="text">
+        </div>
+
+        <div class="form-group">
+            <label>Applicant Income</label>
+            <input type="number">
+        </div>
+
+        <div class="form-group">
+            <label>Coapplicant Income</label>
+            <input type="number">
+        </div>
+
+        <div class="form-group">
+            <label>Loan Amount</label>
+            <input type="number">
+        </div>
+
+        <div class="form-group">
+            <label>Loan Amount Term</label>
+            <input type="number">
+        </div>
+
+        <div class="form-group">
+            <label>Credit History</label>
+            <select>
+                <option>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Gender</label>
+            <select>
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Married</label>
+            <select>
+                <option>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Education (Not Graduate)</label>
+            <select>
+                <option>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Self Employed</label>
+            <select>
+                <option>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Property Area (Urban)</label>
+            <select>
+                <option>Yes</option>
+                <option>No</option>
+            </select>
+        </div>
+
+        <button style="width:100%; margin-top:10px;">Predict</button>
+    </div>
+
+    <script>
+        function startApp() {
+            document.getElementById("welcome").style.display = "none";
+            document.getElementById("formSection").classList.remove("hidden");
+        }
+    </script>
+
+</body>
+</html>
