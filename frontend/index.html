@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart City Routing System</title>
+
+    <!-- Leaflet Map -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>🚦 Smart Adaptive City Routing</h1>
+    <p>
+        A decision-support system for cities where conditions change
+        and priorities conflict.
+    </p>
+
+    <label>User Role</label>
+    <select id="role">
+        <option value="ambulance">🚑 Ambulance</option>
+        <option value="commuter">🧑‍💼 Office Commuter</option>
+        <option value="delivery">📦 Delivery Driver</option>
+        <option value="planner">🏙 City Planner</option>
+    </select>
+
+    <label>Start Location</label>
+    <input type="text" id="start" placeholder="Enter start point">
+
+    <label>Destination</label>
+    <input type="text" id="end" placeholder="Enter destination">
+
+    <button onclick="findRoute()">Analyze Routes</button>
+
+    <div id="result" class="result-box"></div>
+
+    <!-- Uncertainty Indicator -->
+    <div id="uncertainty" class="uncertainty-box">
+        ⚠️ Decisions are based on current information and may change as conditions update.
+    </div>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
