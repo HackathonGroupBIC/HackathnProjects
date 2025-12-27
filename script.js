@@ -1,128 +1,198 @@
 // ==============================
 // Map Initialization
 // ==============================
-const map = L.map("map").setView([26.4525, 87.2718], 13);
+const map = L.map("map", {
+    worldCopyJump: true,
+    maxZoom: 18,
+    minZoom: 6
+}).setView([28.3949, 84.1240], 7); // Nepal center
 
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors"
 }).addTo(map);
 
-let routeA, routeB, hazardMarker;
+let routeA, routeB;
+let startMarker, endMarker;
+let hazardMarkers = [];
 
 // ==============================
-// Main Function
+// Simulated Hazards (Frontend)
 // ==============================
-function findRoute() {
+const simulatedHazards = [
+    { type: "Flooding", reason: "Heavy rainfall reported" },
+    { type: "Construction", reason: "Ongoing road maintenance" },
+    { type: "Congestion", reason: "High traffic volume" }
+];
 
-    const role = document.getElementById("role").value;
+// ==============================
+// Hazard Icons
+// ==============================
+function getHazardIcon(type) {
+    const icons = {
+        Flooding: "🌊",
+        Construction: "🚧",
+        Congestion: "🚗",
+        Accident: "💥"
+    };
+
+    return L.divIcon({
+        html: `<div style="
+            font-size:22px;
+            background:white;
+            border:2px solid #ff4d4d;
+            border-radius:50%;
+            width:34px;
+            height:34px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        ">${icons[type] || "⚠️"}</div>`
+    });
+}
+
+// ==============================
+// Nepal-only Geocoding
+// ==============================
+async function geocodeLocation(place) {
+    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(
+        place + ", Nepal"
+    )}`;
+
+    const response = await fetch(url, {
+        headers: { "Accept-Language": "en" }
+    });
+
+    const data = await response.json();
+
+    if (!data.length) {
+        throw new Error(
+            "Location not found in Nepal. Try a nearby area, road, or landmark."
+        );
+    }
+
+    return {
+        lat: parseFloat(data[0].lat),
+        lon: parseFloat(data[0].lon),
+        display: data[0].display_name
+    };
+}
+
+// ==============================
+// MAIN FUNCTION
+// ==============================
+async function findRoute() {
+    const startName = document.getElementById("start").value.trim();
+    const endName = document.getElementById("end").value.trim();
+
+    if (!startName || !endName) {
+        alert("Please enter both start and destination locations.");
+        return;
+    }
 
     clearMap();
 
-    // ------------------------------
-    // Simulated Routes
-    // ------------------------------
-    const routeAcoords = [
-        [26.4525, 87.2718],
-        [26.4560, 87.2790],
-        [26.4605, 87.2830]
-    ];
+    try {
+        // 1️⃣ Convert text to Nepal coordinates
+        const start = await geocodeLocation(startName);
+        const end = await geocodeLocation(endName);
 
-    const routeBcoords = [
-        [26.4525, 87.2718],
-        [26.4510, 87.2795],
-        [26.4550, 87.2865]
-    ];
+        // 2️⃣ Zoom to start location
+        map.setView([start.lat, start.lon], 11);
 
-    routeA = L.polyline(routeAcoords, {
-        color: "red",
-        weight: 6
-    }).addTo(map);
+        // 3️⃣ Show exact markers
+        startMarker = L.marker([start.lat, start.lon])
+            .addTo(map)
+            .bindPopup(`📍 Start<br>${start.display}`)
+            .openPopup();
 
-    routeB = L.polyline(routeBcoords, {
-        color: "green",
-        weight: 6
-    }).addTo(map);
+        endMarker = L.marker([end.lat, end.lon])
+            .addTo(map)
+            .bindPopup(`🏁 Destination<br>${end.display}`);
 
-    map.fitBounds(L.featureGroup([routeA, routeB]).getBounds());
+        // 4️⃣ Create two alternative routes
+        const midLat = (start.lat + end.lat) / 2;
+        const midLon = (start.lon + end.lon) / 2;
 
-    // ------------------------------
-    // Simulated Hazard (Fragmented Data)
-    // ------------------------------
-    const hazard = {
-        type: "Flooding",
-        reason: "Heavy rain + poor drainage",
-        location: [26.4605, 87.2830]
-    };
+        const routeAcoords = [
+            [start.lat, start.lon],
+            [midLat + 0.15, midLon],
+            [end.lat, end.lon]
+        ];
 
-    hazardMarker = L.marker(hazard.location)
-        .addTo(map)
-        .bindPopup(`⚠️ ${hazard.type}<br>${hazard.reason}`);
+        const routeBcoords = [
+            [start.lat, start.lon],
+            [midLat - 0.15, midLon],
+            [end.lat, end.lon]
+        ];
 
-    // ------------------------------
-    // Role-Based Explanation
-    // ------------------------------
-    let explanation = "";
+        routeA = L.polyline(routeAcoords, { color: "red", weight: 6 }).addTo(map);
+        routeB = L.polyline(routeBcoords, { color: "green", weight: 6 }).addTo(map);
 
-    if (role === "ambulance") {
-        explanation = `
-        🚑 <b>Ambulance Priority</b><br>
-        Route A is risky due to flooding.<br>
-        Route B is recommended for reliability and emergency access.
+        map.fitBounds(L.featureGroup([routeA, routeB]).getBounds());
+
+        // 5️⃣ Add hazards (simulated)
+        simulatedHazards.forEach((hazard, i) => {
+            const marker = L.marker(
+                [midLat + i * 0.05, midLon - i * 0.05],
+                { icon: getHazardIcon(hazard.type) }
+            ).addTo(map);
+
+            marker.bindPopup(`
+                <b>${hazard.type}</b><br>
+                ${hazard.reason}<br>
+                <i>Simulated condition</i>
+            `);
+
+            hazardMarkers.push(marker);
+        });
+
+        // 6️⃣ Route explanation
+        document.getElementById("result").innerHTML = `
+<b>Two route options found:</b><br><br>
+🔴 <b>Route A</b>: Faster but riskier due to road conditions.<br>
+🟢 <b>Route B</b>: Safer and more reliable.<br><br>
+Click a route on the map to select it.
         `;
-    }
-    else if (role === "delivery") {
-        explanation = `
-        📦 <b>Delivery Priority</b><br>
-        Route A is faster but risky (flooding).<br>
-        Route B is safer but slower.
-        `;
-    }
-    else if (role === "commuter") {
-        explanation = `
-        🧑‍💼 <b>Commuter Priority</b><br>
-        Route B provides more consistent travel time.<br>
-        Route A may cause delays.
-        `;
-    }
-    else {
-        explanation = `
-        🏙 <b>City Planner View</b><br>
-        Route A may increase disruption due to flooding.<br>
-        Route B reduces congestion and improves fairness.
-        `;
-    }
 
-    document.getElementById("result").innerHTML = explanation;
+        // 7️⃣ Route click behavior
+        routeA.on("click", () => {
+            document.getElementById("result").innerHTML = `
+<div class="route-selected">
+🔴 <b>Route A Selected</b><br>
+Recommended when speed is critical.
+</div>`;
+        });
 
-    // ------------------------------
-    // Interaction
-    // ------------------------------
-    routeA.on("click", () => showRisk(hazard));
-    routeB.on("click", () => showSafe());
+        routeB.on("click", () => {
+            document.getElementById("result").innerHTML = `
+<div class="route-selected">
+🟢 <b>Route B Selected</b><br>
+Recommended for safer and consistent travel.
+</div>`;
+        });
+
+    } catch (error) {
+        document.getElementById("result").innerHTML = `
+<div class="uncertainty-box">
+⚠️ ${error.message}<br><br>
+Try examples like:<br>
+• Biratnagar Bus Park<br>
+• Main Road Biratnagar<br>
+• Pokhara Lakeside
+</div>`;
+    }
 }
 
 // ==============================
-// Helpers
+// Cleanup
 // ==============================
-function showRisk(hazard) {
-    document.getElementById("result").innerHTML = `
-    ⚠️ <b>Risky Route Selected</b><br>
-    Hazard: ${hazard.type}<br>
-    Reason: ${hazard.reason}<br>
-    This route may become unusable if conditions worsen.
-    `;
-}
-
-function showSafe() {
-    document.getElementById("result").innerHTML = `
-    ✅ <b>Safer Route Selected</b><br>
-    No major hazards detected at this time.<br>
-    Recommended based on current conditions.
-    `;
-}
-
 function clearMap() {
     if (routeA) map.removeLayer(routeA);
     if (routeB) map.removeLayer(routeB);
-    if (hazardMarker) map.removeLayer(hazardMarker);
+
+    if (startMarker) map.removeLayer(startMarker);
+    if (endMarker) map.removeLayer(endMarker);
+
+    hazardMarkers.forEach(marker => map.removeLayer(marker));
+    hazardMarkers = [];
 }

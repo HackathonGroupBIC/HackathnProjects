@@ -69,3 +69,28 @@ button:hover {
     margin: 20px auto;
     border-radius: 12px;
 }
+
+/* ---------- Route Legend ---------- */
+.route-legend {
+    width: 90%;
+    margin: 10px auto;
+    padding: 10px;
+    background: #ffffff;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.route-legend div {
+    margin-top: 6px;
+}
+
+/* ---------- Route Selection Feedback ---------- */
+.route-selected {
+    background: #e6f4ff;
+    border-left: 5px solid #007bff;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
