@@ -2,202 +2,44 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Loan Approval Prediction</title>
+    <title>Smart City Routing System</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
+    <!-- Leaflet -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
 
-        h1 {
-            margin-top: 40px;
-        }
-
-        .container {
-            width: 400px;
-            margin: 30px auto;
-            background: #fff;
-            padding: 25px;
-            border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        p {
-            font-size: 16px;
-            line-height: 1.6;
-        }
-
-        button {
-            background: #4CAF50;
-            color: #fff;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-        }
-
-        button:hover {
-            background: #43a047;
-        }
-
-        .form-group {
-            text-align: left;
-            margin-bottom: 12px;
-        }
-
-        label {
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- Welcome Screen -->
-<div id="welcome">
-    <h1>Loan Approval Prediction</h1>
-    <p>
-        Welcome to the Loan Prediction project!  
-        This application predicts whether a loan will be approved.
-    </p>
-    <button onclick="startApp()">Start</button>
+<div class="container">
+    <h1>🚦 Smart Adaptive City Routing</h1>
+    <p>Select your role and destination. The system adapts decisions.</p>
+
+    <label>User Role</label>
+    <select id="role">
+        <option value="ambulance">🚑 Ambulance</option>
+        <option value="commuter">🧑‍💼 Office Commuter</option>
+        <option value="delivery">📦 Delivery Driver</option>
+        <option value="planner">🏙 City Planner</option>
+    </select>
+
+    <label>Start Location</label>
+    <input type="text" id="start" placeholder="Enter start point">
+
+    <label>Destination</label>
+    <input type="text" id="end" placeholder="Enter destination">
+
+    <button onclick="findRoute()">Find Route</button>
+
+    <div id="result" class="result-box"></div>
 </div>
 
-<!-- Form Screen -->
-<div id="formSection" class="container hidden">
-    <h2>Loan Application Form</h2>
+<div id="map"></div>
 
-    <div class="form-group">
-        <label>Applicant Name</label>
-        <input type="text" id="applicant_name">
-    </div>
-
-    <div class="form-group">
-        <label>Applicant Income</label>
-        <input type="number" id="applicant_income">
-    </div>
-
-    <div class="form-group">
-        <label>Coapplicant Income</label>
-        <input type="number" id="coapplicant_income">
-    </div>
-
-    <div class="form-group">
-        <label>Loan Amount</label>
-        <input type="number" id="loan_amount">
-    </div>
-
-    <div class="form-group">
-        <label>Loan Amount Term</label>
-        <input type="number" id="loan_term">
-    </div>
-
-    <div class="form-group">
-        <label>Credit History</label>
-        <select id="credit_history">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Gender</label>
-        <select id="gender">
-            <option value="1">Male</option>
-            <option value="0">Female</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Married</label>
-        <select id="married">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Education (Not Graduate)</label>
-        <select id="education">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Self Employed</label>
-        <select id="self_employed">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Property Area (Urban)</label>
-        <select id="property_area">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-        </select>
-    </div>
-
-    <button onclick="predictLoan()">Predict</button>
-
-    <h3 id="result"></h3>
-</div>
-
-<script>
-function startApp() {
-    document.getElementById("welcome").style.display = "none";
-    document.getElementById("formSection").classList.remove("hidden");
-}
-
-function predictLoan() {
-    const data = {
-        applicant_income: Number(document.getElementById("applicant_income").value),
-        coapplicant_income: Number(document.getElementById("coapplicant_income").value),
-        loan_amount: Number(document.getElementById("loan_amount").value),
-        loan_term: Number(document.getElementById("loan_term").value),
-        credit_history: Number(document.getElementById("credit_history").value),
-        gender: Number(document.getElementById("gender").value),
-        married: Number(document.getElementById("married").value),
-        education_not_graduate: Number(document.getElementById("education").value),
-        self_employed: Number(document.getElementById("self_employed").value),
-        property_area_urban: Number(document.getElementById("property_area").value)
-    };
-
-    fetch("http://127.0.0.1:8000/predict", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
-    })
-    .then(res => res.json())
-    .then(result => {
-        document.getElementById("result").innerText =
-            "Loan Status: " + result.loan_status;
-    })
-    .catch(() => {
-        document.getElementById("result").innerText =
-            "Error: FastAPI server not running";
-    });
-}
-</script>
-
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
